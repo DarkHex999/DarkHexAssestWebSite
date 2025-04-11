@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Hex</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #f0f0f0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.8) 100%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        header {
+            padding: 2rem;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
+            display: inline-block;
+            position: relative;
+        }
+
+        .logo::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        nav a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        nav a::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #ffffff;
+            transition: width 0.2s ease;
+        }
+
+        nav a:hover::before {
+            width: 100%;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+        }
+
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), transparent);
+        }
+
+        .page-section {
+            opacity: 0;
+            display: none;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            width: 100%;
+            left: 0;
+        }
+
+        .page-section.active {
+            opacity: 1;
+            display: block;
+            position: relative;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .assets-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .asset-card {
+            background: rgba(20, 20, 20, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .asset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .asset-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .asset-info {
+            padding: 1rem;
+        }
+
+        .asset-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-section {
+            margin-top: 4rem;
+            padding: 2rem;
+            background: rgba(20, 20, 20, 0.7);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .contact-email {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .email-icon {
+            font-size: 1.2rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .copyright {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        /* Page Transition Animation - Now Faster */
+        .page-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            clip-path: circle(0% at 50% 50%);
+            display: none;
+            transition: clip-path 0.25s ease-in-out;
+        }
+
+        .page-transition.active {
+            display: block;
+            clip-path: circle(150% at 50% 50%);
+        }
+
+        .page-transition.closing {
+            clip-path: circle(0% at 50% 50%);
+        }
+        
+        .home-content {
+            line-height: 1.6;
+            max-width: 800px;
+        }
+        
+        .home-content p {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container">
+        <div class="vignette"></div>
+        <canvas id="hologramCanvas"></canvas>
+    </div>
+
+    <div class="page-transition"></div>
+
+    <header>
+        <div class="logo">Dark Hex</div>
+        <nav>
+            <a class="nav-link active" data-target="home">Home</a>
+            <a class="nav-link" data-target="assets">My Assets I Made</a>
+            <a class="nav-link" data-target="contact">Contact</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="page-section active">
+            <h2 class="section-title">Welcome to Dark Hex Web Site</h2>
+            <div class="home-content">
+                <p>As an independent game developer, I understand the challenges of finding the right tools and assets that streamline the development process. When I encounter a gap in resources, I don't hesitate to create custom assets tailored to specific needs.</p>
+                
+                <p>Whether it's unique gameplay mechanics, tools , I focus on producing high-quality, versatile assets that other developers can rely on to enhance their projects.</p>
+                
+                <p>By uploading these creations, I aim to support fellow developers while also showcasing the innovation and craftsmanship that define my Assets.</p>
+            </div>
+        </section>
+
+        <section id="assets" class="page-section">
+            <h2 class="section-title">Inspector Sprite Drawer Assest</h2>
+            <div class="assets-container">
+                <div class="asset-card">
+                    <img src="https://raw.githubusercontent.com/DarkHex999/DarkHexAssestWebSite/refs/heads/main/image-420x280.jpg" alt="Asset 1" class="asset-image">
+                    <div class="asset-info">
+                        <h3 class="asset-title">Assest Image</h3>
+                        <p>Easy to use just import and it works automatically</p>
+                    </div>
+                </div>
+                <div class="asset-card">
+                    <img src="https://raw.githubusercontent.com/DarkHex999/DarkHexAssestWebSite/refs/heads/main/04.jpg" alt="Asset 2" class="asset-image">
+                    <div class="asset-info">
+                        <h3 class="asset-title">Asset Usefulness</h3>
+                        <p>Enhance the inspector experience by making images more visible instead of searching for them by name only.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="page-section">
+            <h2 class="section-title">Contact Me</h2>
+            <div class="contact-section">
+                <p>You can reach me at:</p>
+                <div class="contact-email">
+                    <span class="email-icon">✉️</span>
+                    <a href="mailto:masccopp@gmail.com" style="color: #ffffff; text-decoration: none;">masccopp@gmail.com</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p class="copyright">© 2025 Dark Hex. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Canvas setup for hologram-like floating lines
+        const canvas = document.getElementById('hologramCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size to match window
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Line particles class
+        class Line {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.length = Math.random() * 100 + 50;
+                this.angle = Math.random() * 2 * Math.PI;
+                this.speed = Math.random() * 0.5 + 0.1;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.width = Math.random() * 1.5 + 0.5;
+                this.color = `rgba(255, 255, 255, ${this.opacity})`;
+            }
+            
+            update() {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                
+                // Reset if out of bounds
+                if (this.x < -this.length || this.x > canvas.width + this.length || 
+                    this.y < -this.length || this.y > canvas.height + this.length) {
+                    this.reset();
+                }
+            }
+            
+            draw() {
+                const endX = this.x + Math.cos(this.angle) * this.length;
+                const endY = this.y + Math.sin(this.angle) * this.length;
+                
+                ctx.beginPath();
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.width;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+                
+                // Add glow effect
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity * 0.3})`;
+                ctx.lineWidth = this.width * 2;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+            }
+        }
+        
+        // Create line particles
+        const lines = [];
+        const lineCount = 50;
+        
+        for (let i = 0; i < lineCount; i++) {
+            lines.push(new Line());
+        }
+        
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw all lines
+            lines.forEach(line => {
+                line.update();
+                line.draw();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+
+        // Page Navigation with Faster Transition Effect
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.page-section');
+            const pageTransition = document.querySelector('.page-transition');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = link.getAttribute('data-target');
+                    
+                    // Skip if already active
+                    if (link.classList.contains('active')) return;
+                    
+                    // Start transition animation
+                    pageTransition.classList.add('active');
+                    
+                    // Remove active class from all nav links
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    link.classList.add('active');
+                    
+                    // Faster transition - reduced time from 500ms to 250ms
+                    setTimeout(() => {
+                        // Hide all sections
+                        sections.forEach(section => section.classList.remove('active'));
+                        
+                        // Show target section
+                        document.getElementById(target).classList.add('active');
+                        
+                        // Close transition animation
+                        pageTransition.classList.add('closing');
+                        
+                        setTimeout(() => {
+                            pageTransition.classList.remove('active');
+                            pageTransition.classList.remove('closing');
+                        }, 250); // Faster closing animation
+                    }, 250); // Faster transition
+                });
+            });
+        });
+    </script>
+</body>
+</html>
